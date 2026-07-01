@@ -219,7 +219,9 @@ export default function CalendarClient() {
             />
 
             <input
-              type="time"
+              type="text"
+              inputMode="numeric"
+              placeholder="Hora (ej. 14:30)"
               value={form.time}
               onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
               style={{ width: '100%', background: '#1a0f0a', border: '1px solid #3a2015', borderRadius: 8,
