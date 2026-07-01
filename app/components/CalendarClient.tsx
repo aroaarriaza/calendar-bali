@@ -20,6 +20,14 @@ const CATEGORIES: Record<Category, { label: string; color: string; bg: string; b
   work:     { label: 'Trabajo',   color: '#e09090', bg: 'rgba(180,60,60,0.2)',    border: '#b05050' },
 }
 
+const SEED_EVENTS: Event[] = [
+  { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot', category: 'activity' },
+  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar', category: 'social' },
+  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns', category: 'social' },
+  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
+  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour', category: 'activity', time: '03:00' },
+]
+
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const DAYS_IN_JULY = 31
 const START_OFFSET = 2 // 1 julio 2026 = miércoles
@@ -35,7 +43,21 @@ export default function CalendarClient() {
 
   useEffect(() => {
     const saved = localStorage.getItem('bali-events')
-    if (saved) setEvents(JSON.parse(saved))
+    if (saved) {
+      const existing: Event[] = JSON.parse(saved)
+      const existingIds = new Set(existing.map(e => e.id))
+      const toAdd = SEED_EVENTS.filter(e => !existingIds.has(e.id))
+      if (toAdd.length > 0) {
+        const merged = [...existing, ...toAdd]
+        setEvents(merged)
+        localStorage.setItem('bali-events', JSON.stringify(merged))
+      } else {
+        setEvents(existing)
+      }
+    } else {
+      setEvents(SEED_EVENTS)
+      localStorage.setItem('bali-events', JSON.stringify(SEED_EVENTS))
+    }
   }, [])
 
   const persist = (evts: Event[]) => {
