@@ -25,7 +25,7 @@ const SEED_EVENTS: Event[] = [
   { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar', category: 'social' },
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns', category: 'social' },
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
-  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour', category: 'activity', time: '03:00' },
+  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour', category: 'activity' },
   { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'work' },
 ]
 
@@ -44,21 +44,13 @@ export default function CalendarClient() {
 
   useEffect(() => {
     const saved = localStorage.getItem('bali-events')
-    if (saved) {
-      const existing: Event[] = JSON.parse(saved)
-      const existingIds = new Set(existing.map(e => e.id))
-      const toAdd = SEED_EVENTS.filter(e => !existingIds.has(e.id))
-      if (toAdd.length > 0) {
-        const merged = [...existing, ...toAdd]
-        setEvents(merged)
-        localStorage.setItem('bali-events', JSON.stringify(merged))
-      } else {
-        setEvents(existing)
-      }
-    } else {
-      setEvents(SEED_EVENTS)
-      localStorage.setItem('bali-events', JSON.stringify(SEED_EVENTS))
-    }
+    const seedIds = new Set(SEED_EVENTS.map(e => e.id))
+    const existing: Event[] = saved ? JSON.parse(saved) : []
+    // Los seed events siempre se actualizan con la versión del código
+    const userEvents = existing.filter(e => !seedIds.has(e.id))
+    const merged = [...SEED_EVENTS, ...userEvents]
+    setEvents(merged)
+    localStorage.setItem('bali-events', JSON.stringify(merged))
   }, [])
 
   const persist = (evts: Event[]) => {
