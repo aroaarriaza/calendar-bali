@@ -143,7 +143,7 @@ export default function CalendarClient() {
 
       {/* Selector de zona horaria */}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 32 }}>
-        {(['Madrid', 'Miami', 'Bali'] as Timezone[]).map(tz => (
+        {(['Miami', 'Madrid', 'Bali'] as Timezone[]).map(tz => (
           <button
             key={tz}
             onClick={() => setTimezone(tz)}
