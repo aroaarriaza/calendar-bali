@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=8&orientation=landscape`,
     {
       headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` },
-      next: { revalidate: 86400 }, // cache 24h
+      next: { revalidate: 3600 }, // cache 1h
     }
   )
 
