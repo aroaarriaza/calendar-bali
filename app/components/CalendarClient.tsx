@@ -145,8 +145,10 @@ export default function CalendarClient() {
   const [modal,       setModal]       = useState<{ date: string; event?: Event } | null>(null)
   const [form,        setForm]        = useState({ title: '', time: '', category: 'activity' as Category })
   const [timezone,    setTimezone]    = useState<Timezone>('Madrid')
-  const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [uploading,   setUploading]   = useState(false)
+  const [attachments,   setAttachments]   = useState<Attachment[]>([])
+  const [uploading,     setUploading]     = useState(false)
+  const [photos,        setPhotos]        = useState<{ url: string; alt: string; credit: string; creditUrl: string }[]>([])
+  const [loadingPhotos, setLoadingPhotos] = useState(false)
 
   useEffect(() => {
     const saved   = localStorage.getItem('bali-events')
@@ -162,9 +164,26 @@ export default function CalendarClient() {
     localStorage.setItem('bali-events', JSON.stringify(evts))
   }
 
+  const fetchPhotos = async (title: string, category: Category) => {
+    const clean = title.replace(/\p{Emoji}/gu, '').trim()
+    if (!clean) return
+    const ctx = (category === 'activity' || category === 'travel') ? ` Bali` : ''
+    const q = encodeURIComponent(clean + ctx)
+    setLoadingPhotos(true)
+    setPhotos([])
+    try {
+      const res = await fetch(`/api/photos?q=${q}`)
+      const data = await res.json()
+      setPhotos(data.photos ?? [])
+    } finally {
+      setLoadingPhotos(false)
+    }
+  }
+
   const openAdd  = (date: string) => {
     setForm({ title: '', time: '', category: 'activity' })
     setAttachments([])
+    setPhotos([])
     setModal({ date })
   }
   const openEdit = (ev: Event, e: React.MouseEvent) => {
@@ -172,6 +191,7 @@ export default function CalendarClient() {
     setForm({ title: ev.title, time: ev.time || '', category: ev.category })
     setAttachments(ev.attachments || [])
     setModal({ date: ev.date, event: ev })
+    fetchPhotos(ev.title, ev.category)
   }
   const handleSave = () => {
     if (!form.title.trim() || !modal) return
@@ -459,6 +479,41 @@ export default function CalendarClient() {
               }} />
               {modal.event ? 'Editar evento' : 'Nuevo evento'} · {modal.date.slice(8)} julio
             </div>
+
+            {/* Galería de fotos */}
+            {(loadingPhotos || photos.length > 0) && (
+              <div style={{ marginBottom: 16 }}>
+                {loadingPhotos ? (
+                  <div style={{
+                    height: 110, borderRadius: 12,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'rgba(200,150,80,0.4)', fontSize: '0.78rem', letterSpacing: '0.1em',
+                  }}>
+                    Buscando fotos...
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex', gap: 6, overflowX: 'auto',
+                    borderRadius: 12, paddingBottom: 2,
+                    scrollbarWidth: 'none',
+                  }}>
+                    {photos.map((photo, i) => (
+                      <a key={i} href={photo.creditUrl} target="_blank" rel="noopener noreferrer"
+                        title={`Foto: ${photo.credit}`}
+                        style={{ flexShrink: 0, borderRadius: 10, overflow: 'hidden', display: 'block' }}>
+                        <img
+                          src={photo.url}
+                          alt={photo.alt}
+                          style={{ height: 110, width: 165, objectFit: 'cover', display: 'block' }}
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Inputs */}
             {([
