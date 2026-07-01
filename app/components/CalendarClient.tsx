@@ -27,6 +27,7 @@ const SEED_EVENTS: Event[] = [
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns', category: 'social' },
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
   { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour', category: 'activity' },
+  { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial', category: 'social' },
   { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'work' },
 ]
 
