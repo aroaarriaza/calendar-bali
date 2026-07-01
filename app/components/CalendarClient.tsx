@@ -16,6 +16,7 @@ interface Event {
   title: string
   category: Category
   attachments?: Attachment[]
+  photoQuery?: string
 }
 
 const CATEGORIES: Record<Category, { label: string; color: string; bg: string; border: string; glow: string }> = {
@@ -42,14 +43,14 @@ function convertTime(time: string, toTz: Timezone): string {
 }
 
 const SEED_EVENTS: Event[] = [
-  { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot',  category: 'activity' },
-  { id: 'seed-7', date: '2026-07-02', title: '⚽ España-Austria', category: 'football', time: '21:00' },
-  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social' },
-  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social' },
-  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social' },
-  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity' },
-  { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial',  category: 'football', time: '21:00' },
-  { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel' },
+  { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot',  category: 'activity', photoQuery: 'Tanah Lot temple sunset Bali' },
+  { id: 'seed-7', date: '2026-07-02', title: '⚽ España-Austria', category: 'football', time: '21:00', photoQuery: 'Spain football team World Cup' },
+  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Sandbar Seminyak Bali beach party' },
+  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Finns Recreation Club Canggu Bali' },
+  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Atlas Beach Club Bali Seminyak' },
+  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity', photoQuery: 'Mount Batur volcano sunrise Bali trekking' },
+  { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial',  category: 'football', time: '21:00', photoQuery: 'FIFA World Cup final trophy stadium' },
+  { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel',   photoQuery: 'luxury villa pool Bali tropical' },
 ]
 
 const WEEKDAYS   = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -164,10 +165,11 @@ export default function CalendarClient() {
     localStorage.setItem('bali-events', JSON.stringify(evts))
   }
 
-  const fetchPhotos = async (title: string, category: Category) => {
+  const fetchPhotos = async (title: string, category: Category, photoQuery?: string) => {
     const clean = title.replace(/\p{Emoji}/gu, '').trim()
     if (!clean) return
-    const q = encodeURIComponent(category === 'football' ? clean : `${clean} Bali`)
+    const query = photoQuery || (category === 'football' ? clean : `${clean} Bali`)
+    const q = encodeURIComponent(query)
     setLoadingPhotos(true)
     setPhotos([])
     try {
@@ -190,7 +192,7 @@ export default function CalendarClient() {
     setForm({ title: ev.title, time: ev.time || '', category: ev.category })
     setAttachments(ev.attachments || [])
     setModal({ date: ev.date, event: ev })
-    fetchPhotos(ev.title, ev.category)
+    fetchPhotos(ev.title, ev.category, ev.photoQuery)
   }
   const handleSave = () => {
     if (!form.title.trim() || !modal) return
