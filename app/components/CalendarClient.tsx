@@ -45,9 +45,9 @@ function convertTime(time: string, toTz: Timezone): string {
 const SEED_EVENTS: Event[] = [
   { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot',  category: 'activity', photoQuery: 'Tanah Lot temple sunset Bali' },
   { id: 'seed-7', date: '2026-07-02', title: '⚽ España-Austria', category: 'football', time: '21:00', photoQuery: 'Spain football team World Cup' },
-  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Sandbar Seminyak Bali beach party' },
-  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Finns Recreation Club Canggu Bali' },
-  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Atlas Beach Club Bali Seminyak' },
+  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Seminyak Bali beach sunset cocktail bar' },
+  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Canggu Bali surf beach club pool party' },
+  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Bali rooftop beach club ocean view luxury' },
   { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity', photoQuery: 'Mount Batur volcano sunrise Bali trekking' },
   { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial',  category: 'football', time: '21:00', photoQuery: 'FIFA World Cup final trophy stadium' },
   { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel',   photoQuery: 'luxury villa pool Bali tropical' },
@@ -212,13 +212,18 @@ export default function CalendarClient() {
     if (!file) return
     setUploading(true)
     try {
+      const contentType = file.type || 'application/octet-stream'
       const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
         method: 'POST',
-        body: file,
-        headers: { 'content-type': file.type },
+        body: await file.arrayBuffer(),
+        headers: { 'content-type': contentType },
       })
       const data = await res.json()
+      if (data.error) throw new Error(data.error)
       setAttachments(prev => [...prev, { name: file.name, url: data.url }])
+    } catch (err) {
+      alert('Error al subir el archivo. Inténtalo de nuevo.')
+      console.error(err)
     } finally {
       setUploading(false)
       e.target.value = ''
