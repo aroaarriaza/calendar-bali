@@ -167,8 +167,7 @@ export default function CalendarClient() {
   const fetchPhotos = async (title: string, category: Category) => {
     const clean = title.replace(/\p{Emoji}/gu, '').trim()
     if (!clean) return
-    const ctx = (category === 'activity' || category === 'travel') ? ` Bali` : ''
-    const q = encodeURIComponent(clean + ctx)
+    const q = encodeURIComponent(category === 'football' ? clean : `${clean} Bali`)
     setLoadingPhotos(true)
     setPhotos([])
     try {
