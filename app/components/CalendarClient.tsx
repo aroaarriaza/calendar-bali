@@ -196,12 +196,33 @@ export default function CalendarClient() {
     setModal({ date: ev.date, event: ev })
     fetchPhotos(ev.title, ev.category, ev.photoQuery)
   }
+  const geocodeAndUpdate = async (id: string, title: string) => {
+    try {
+      const clean = title.replace(/\p{Emoji}/gu, '').trim()
+      if (!clean) return
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(clean)}`)
+      const data = await res.json()
+      if (data.coords) {
+        setEvents(prev => {
+          const next = prev.map(e => e.id === id ? { ...e, coords: data.coords } : e)
+          localStorage.setItem('bali-events', JSON.stringify(next))
+          return next
+        })
+      }
+    } catch {}
+  }
+
   const handleSave = () => {
     if (!form.title.trim() || !modal) return
     const category = modal.event ? form.category : detectCategory(form.title)
     const updated = { ...form, category, attachments }
-    if (modal.event) persist(events.map(e => e.id === modal.event!.id ? { ...e, ...updated } : e))
-    else persist([...events, { id: Date.now().toString(), date: modal.date, ...updated }])
+    if (modal.event) {
+      persist(events.map(e => e.id === modal.event!.id ? { ...e, ...updated } : e))
+    } else {
+      const newId = Date.now().toString()
+      persist([...events, { id: newId, date: modal.date, ...updated }])
+      void geocodeAndUpdate(newId, form.title)
+    }
     setModal(null)
   }
   const handleDelete = () => {
