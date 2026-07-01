@@ -20,9 +20,33 @@ const CATEGORIES: Record<Category, { label: string; color: string; bg: string; b
   football:  { label: 'Fútbol',    color: '#ff9a9a', bg: 'rgba(200,40,40,0.2)',  border: '#cc3030' },
 }
 
+type Timezone = 'Madrid' | 'Miami' | 'Bali'
+
+const TZ_OFFSETS: Record<Timezone, number> = {
+  Madrid: 2,   // CEST (verano)
+  Miami: -4,   // EDT (verano)
+  Bali: 8,     // WITA
+}
+
+const TZ_FLAGS: Record<Timezone, string> = {
+  Madrid: '🇪🇸',
+  Miami: '🇺🇸',
+  Bali: '🌴',
+}
+
+function convertTime(time: string, toTz: Timezone): string {
+  if (!time) return ''
+  const [h, m] = time.split(':').map(Number)
+  const diff = TZ_OFFSETS[toTz] - TZ_OFFSETS['Madrid']
+  let newH = h + diff
+  const suffix = newH >= 24 ? ' +1' : newH < 0 ? ' -1' : ''
+  newH = ((newH % 24) + 24) % 24
+  return `${String(newH).padStart(2, '0')}:${String(m).padStart(2, '0')}${suffix}`
+}
+
 const SEED_EVENTS: Event[] = [
   { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot', category: 'activity' },
-  { id: 'seed-7', date: '2026-07-02', title: '⚽ Mundial España', category: 'football' },
+  { id: 'seed-7', date: '2026-07-02', title: '⚽ Mundial España', category: 'football', time: '21:00' },
   { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar', category: 'social' },
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns', category: 'social' },
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
@@ -43,6 +67,7 @@ export default function CalendarClient() {
   const [events, setEvents] = useState<Event[]>([])
   const [modal, setModal] = useState<{ date: string; event?: Event } | null>(null)
   const [form, setForm] = useState({ title: '', time: '', category: 'activity' as Category })
+  const [timezone, setTimezone] = useState<Timezone>('Madrid')
 
   useEffect(() => {
     const saved = localStorage.getItem('bali-events')
@@ -116,6 +141,25 @@ export default function CalendarClient() {
         </div>
       </div>
 
+      {/* Selector de zona horaria */}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 32 }}>
+        {(['Madrid', 'Miami', 'Bali'] as Timezone[]).map(tz => (
+          <button
+            key={tz}
+            onClick={() => setTimezone(tz)}
+            style={{
+              padding: '6px 18px', borderRadius: 20, cursor: 'pointer', fontSize: '0.8rem',
+              border: `1px solid ${timezone === tz ? '#e8c87a' : '#3a2015'}`,
+              background: timezone === tz ? 'rgba(232,200,122,0.12)' : 'transparent',
+              color: timezone === tz ? '#e8c87a' : '#8a7060',
+              fontWeight: timezone === tz ? 500 : 400,
+            }}
+          >
+            {TZ_FLAGS[tz]} {tz}
+          </button>
+        ))}
+      </div>
+
       {/* Días de semana */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, maxWidth: 1100, margin: '0 auto 6px' }}>
         {WEEKDAYS.map((d, i) => (
@@ -170,7 +214,7 @@ export default function CalendarClient() {
                       background: cat.bg, color: cat.color, borderLeft: `2px solid ${cat.border}`, cursor: 'pointer',
                     }}
                   >
-                    {ev.time && <span style={{ opacity: 0.7, fontSize: '0.62rem', marginRight: 3 }}>{ev.time}</span>}
+                    {ev.time && <span style={{ opacity: 0.7, fontSize: '0.62rem', marginRight: 3 }}>{convertTime(ev.time, timezone)}</span>}
                     {ev.title}
                   </div>
                 )
@@ -221,7 +265,7 @@ export default function CalendarClient() {
             <input
               type="text"
               inputMode="numeric"
-              placeholder="Hora (ej. 14:30)"
+              placeholder="Hora Madrid (ej. 14:30)"
               value={form.time}
               onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
               style={{ width: '100%', background: '#1a0f0a', border: '1px solid #3a2015', borderRadius: 8,
