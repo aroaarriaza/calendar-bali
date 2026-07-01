@@ -43,7 +43,7 @@ const SEED_EVENTS: Event[] = [
   { id: 'seed-7', date: '2026-07-02', title: '⚽ España-Austria', category: 'football', time: '21:00', photoQuery: 'Spain football team World Cup' },
   { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Seminyak Bali beach sunset cocktail bar',       coords: [-8.6897, 115.1580] },
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Canggu Bali surf beach club pool party',        coords: [-8.6551, 115.1270] },
-  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Bali rooftop beach club ocean view luxury',     coords: [-8.6520, 115.1242] },
+  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Bali beach club sunset pool canggu',           coords: [-8.6520, 115.1242] },
   { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity', photoQuery: 'Mount Batur volcano sunrise Bali trekking',     coords: [-8.2416, 115.3757] },
   { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial',  category: 'football', time: '21:00', photoQuery: 'FIFA World Cup final trophy stadium' },
   { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel',   photoQuery: 'luxury villa pool Bali tropical' },
@@ -152,7 +152,12 @@ export default function CalendarClient() {
     const saved   = localStorage.getItem('bali-events')
     const seedIds = new Set(SEED_EVENTS.map(e => e.id))
     const existing: Event[] = saved ? JSON.parse(saved) : []
-    const merged = [...SEED_EVENTS, ...existing.filter(e => !seedIds.has(e.id))]
+    const existingMap = new Map(existing.map(e => [e.id, e]))
+    const mergedSeeds = SEED_EVENTS.map(seed => {
+      const stored = existingMap.get(seed.id)
+      return stored?.attachments?.length ? { ...seed, attachments: stored.attachments } : seed
+    })
+    const merged = [...mergedSeeds, ...existing.filter(e => !seedIds.has(e.id))]
     setEvents(merged)
     localStorage.setItem('bali-events', JSON.stringify(merged))
   }, [])
