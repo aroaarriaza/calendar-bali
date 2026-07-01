@@ -1,23 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import type { Category, Attachment, CalendarEvent as Event } from '../types'
 
-type Category = 'activity' | 'travel' | 'social' | 'wellness' | 'football'
-
-interface Attachment {
-  name: string
-  url: string
-}
-
-interface Event {
-  id: string
-  date: string
-  time?: string
-  title: string
-  category: Category
-  attachments?: Attachment[]
-  photoQuery?: string
-}
+const BaliMap = dynamic(() => import('./BaliMap'), { ssr: false })
 
 const CATEGORIES: Record<Category, { label: string; color: string; bg: string; border: string; glow: string }> = {
   activity: { label: 'Actividad', color: '#FFD166', bg: 'rgba(255,180,40,0.18)',  border: '#E8A820', glow: 'rgba(232,168,32,0.5)'  },
@@ -52,12 +39,12 @@ function convertTime(time: string, toTz: Timezone): string {
 }
 
 const SEED_EVENTS: Event[] = [
-  { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot',  category: 'activity', photoQuery: 'Tanah Lot temple sunset Bali' },
+  { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot',  category: 'activity', photoQuery: 'Tanah Lot temple sunset Bali',                coords: [-8.6210, 115.0868] },
   { id: 'seed-7', date: '2026-07-02', title: '⚽ España-Austria', category: 'football', time: '21:00', photoQuery: 'Spain football team World Cup' },
-  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Seminyak Bali beach sunset cocktail bar' },
-  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Canggu Bali surf beach club pool party' },
-  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Bali rooftop beach club ocean view luxury' },
-  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity', photoQuery: 'Mount Batur volcano sunrise Bali trekking' },
+  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Seminyak Bali beach sunset cocktail bar',       coords: [-8.6897, 115.1580] },
+  { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Canggu Bali surf beach club pool party',        coords: [-8.6551, 115.1270] },
+  { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Bali rooftop beach club ocean view luxury',     coords: [-8.6520, 115.1242] },
+  { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity', photoQuery: 'Mount Batur volcano sunrise Bali trekking',     coords: [-8.2416, 115.3757] },
   { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial',  category: 'football', time: '21:00', photoQuery: 'FIFA World Cup final trophy stadium' },
   { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel',   photoQuery: 'luxury villa pool Bali tropical' },
 ]
@@ -151,6 +138,7 @@ const CSS = `
 `
 
 export default function CalendarClient() {
+  const [view,        setView]        = useState<'calendar' | 'map'>('calendar')
   const [events,      setEvents]      = useState<Event[]>([])
   const [modal,       setModal]       = useState<{ date: string; event?: Event } | null>(null)
   const [form,        setForm]        = useState({ title: '', time: '', category: 'activity' as Category })
@@ -333,8 +321,32 @@ export default function CalendarClient() {
           })}
         </div>
 
+        {/* Toggle vista */}
+        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 36 }}>
+          {([['calendar', '📅 Calendario'], ['map', '🗺️ Mapa']] as const).map(([v, label]) => (
+            <button key={v} onClick={() => setView(v)} className="cal-tz" style={{
+              padding: '7px 22px', borderRadius: 24, fontSize: '0.78rem', letterSpacing: '0.04em',
+              fontWeight: view === v ? 600 : 400,
+              border: view === v ? '1px solid rgba(255,180,80,0.6)' : '1px solid rgba(255,255,255,0.07)',
+              background: view === v ? 'linear-gradient(135deg,rgba(255,160,60,0.22),rgba(220,100,20,0.10))' : 'rgba(255,255,255,0.025)',
+              color: view === v ? '#FFD166' : 'rgba(200,150,80,0.45)',
+              boxShadow: view === v ? '0 0 20px rgba(255,150,50,0.15)' : 'none',
+            }}>{label}</button>
+          ))}
+        </div>
+
+        {/* Vista mapa */}
+        {view === 'map' && (
+          <div style={{ maxWidth: 1100, margin: '0 auto 40px', height: 560, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,180,80,0.15)' }}>
+            <BaliMap
+              events={events}
+              onEventClick={ev => openEdit(ev, { stopPropagation: () => {} } as React.MouseEvent)}
+            />
+          </div>
+        )}
+
         {/* ── Cabecera días ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, maxWidth: 1100, margin: '0 auto 8px' }}>
+        <div style={{ display: view === 'map' ? 'none' : 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, maxWidth: 1100, margin: '0 auto 8px' }}>
           {WEEKDAYS.map((d, i) => (
             <div key={d} style={{
               textAlign: 'center',
@@ -351,7 +363,7 @@ export default function CalendarClient() {
         </div>
 
         {/* ── Grid ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ display: view === 'map' ? 'none' : 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, maxWidth: 1100, margin: '0 auto' }}>
           {cells.map((day, idx) => {
             if (!day) return <div key={`empty-${idx}`} />
 
