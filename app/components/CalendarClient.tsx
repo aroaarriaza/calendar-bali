@@ -4,12 +4,18 @@ import { useState, useEffect } from 'react'
 
 type Category = 'activity' | 'travel' | 'social' | 'wellness' | 'football'
 
+interface Attachment {
+  name: string
+  url: string
+}
+
 interface Event {
   id: string
   date: string
   time?: string
   title: string
   category: Category
+  attachments?: Attachment[]
 }
 
 const CATEGORIES: Record<Category, { label: string; color: string; bg: string; border: string; glow: string }> = {
@@ -135,10 +141,12 @@ const CSS = `
 `
 
 export default function CalendarClient() {
-  const [events,   setEvents]   = useState<Event[]>([])
-  const [modal,    setModal]    = useState<{ date: string; event?: Event } | null>(null)
-  const [form,     setForm]     = useState({ title: '', time: '', category: 'activity' as Category })
-  const [timezone, setTimezone] = useState<Timezone>('Madrid')
+  const [events,      setEvents]      = useState<Event[]>([])
+  const [modal,       setModal]       = useState<{ date: string; event?: Event } | null>(null)
+  const [form,        setForm]        = useState({ title: '', time: '', category: 'activity' as Category })
+  const [timezone,    setTimezone]    = useState<Timezone>('Madrid')
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [uploading,   setUploading]   = useState(false)
 
   useEffect(() => {
     const saved   = localStorage.getItem('bali-events')
@@ -154,22 +162,46 @@ export default function CalendarClient() {
     localStorage.setItem('bali-events', JSON.stringify(evts))
   }
 
-  const openAdd  = (date: string) => { setForm({ title: '', time: '', category: 'activity' }); setModal({ date }) }
+  const openAdd  = (date: string) => {
+    setForm({ title: '', time: '', category: 'activity' })
+    setAttachments([])
+    setModal({ date })
+  }
   const openEdit = (ev: Event, e: React.MouseEvent) => {
     e.stopPropagation()
     setForm({ title: ev.title, time: ev.time || '', category: ev.category })
+    setAttachments(ev.attachments || [])
     setModal({ date: ev.date, event: ev })
   }
   const handleSave = () => {
     if (!form.title.trim() || !modal) return
-    if (modal.event) persist(events.map(e => e.id === modal.event!.id ? { ...e, ...form } : e))
-    else persist([...events, { id: Date.now().toString(), date: modal.date, ...form }])
+    const updated = { ...form, attachments }
+    if (modal.event) persist(events.map(e => e.id === modal.event!.id ? { ...e, ...updated } : e))
+    else persist([...events, { id: Date.now().toString(), date: modal.date, ...updated }])
     setModal(null)
   }
   const handleDelete = () => {
     if (!modal?.event) return
     persist(events.filter(e => e.id !== modal.event!.id))
     setModal(null)
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file,
+        headers: { 'content-type': file.type },
+      })
+      const data = await res.json()
+      setAttachments(prev => [...prev, { name: file.name, url: data.url }])
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
   }
 
   const eventsForDay = (day: number) =>
@@ -359,6 +391,9 @@ export default function CalendarClient() {
                         </span>
                       )}
                       {ev.title}
+                      {ev.attachments?.length ? (
+                        <span style={{ opacity: 0.6, marginLeft: 4 }}>📎</span>
+                      ) : null}
                     </div>
                   )
                 })}
@@ -466,6 +501,46 @@ export default function CalendarClient() {
                 <option key={key} value={key}>{cat.label}</option>
               ))}
             </select>
+
+            {/* Adjuntos */}
+            <div style={{ marginBottom: 22 }}>
+              {attachments.map((att, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 9, padding: '8px 12px', marginBottom: 6,
+                }}>
+                  <span style={{ fontSize: '0.85rem' }}>📄</span>
+                  <a href={att.url} target="_blank" rel="noopener noreferrer"
+                    style={{ flex: 1, fontSize: '0.78rem', color: '#90D8C8', textDecoration: 'none',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {att.name}
+                  </a>
+                  <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}
+                    style={{ background: 'none', border: 'none', color: 'rgba(255,100,100,0.6)',
+                      cursor: 'pointer', fontSize: '0.9rem', padding: '0 2px', lineHeight: 1 }}>
+                    ×
+                  </button>
+                </div>
+              ))}
+
+              <label style={{
+                display: 'flex', alignItems: 'center', gap: 8, cursor: uploading ? 'wait' : 'pointer',
+                padding: '9px 14px',
+                border: '1px dashed rgba(255,255,255,0.12)',
+                borderRadius: 9,
+                color: uploading ? 'rgba(200,150,80,0.4)' : 'rgba(200,150,80,0.55)',
+                fontSize: '0.78rem',
+                transition: 'all 0.2s',
+              }}>
+                <span>{uploading ? '⏳' : '📎'}</span>
+                {uploading ? 'Subiendo...' : 'Adjuntar archivo (PDF, imagen...)'}
+                <input type="file" accept="application/pdf,image/*"
+                  onChange={handleFileUpload} disabled={uploading}
+                  style={{ display: 'none' }} />
+              </label>
+            </div>
 
             {/* Botones */}
             <div style={{ display: 'flex', gap: 10 }}>
