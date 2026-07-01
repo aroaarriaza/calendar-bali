@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-type Category = 'activity' | 'travel' | 'social' | 'wellness' | 'work'
+type Category = 'activity' | 'travel' | 'social' | 'wellness'
 
 interface Event {
   id: string
@@ -17,7 +17,6 @@ const CATEGORIES: Record<Category, { label: string; color: string; bg: string; b
   travel:   { label: 'Viaje',     color: '#90c0e8', bg: 'rgba(60,120,180,0.2)',   border: '#5090c0' },
   social:   { label: 'Social',    color: '#c090e8', bg: 'rgba(120,60,160,0.25)',  border: '#9060c0' },
   wellness: { label: 'Bienestar', color: '#80d0a0', bg: 'rgba(40,140,80,0.2)',    border: '#50a870' },
-  work:     { label: 'Trabajo',   color: '#e09090', bg: 'rgba(180,60,60,0.2)',    border: '#b05050' },
 }
 
 const SEED_EVENTS: Event[] = [
@@ -28,7 +27,7 @@ const SEED_EVENTS: Event[] = [
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
   { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour', category: 'activity' },
   { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial', category: 'social' },
-  { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'work' },
+  { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel' },
 ]
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
