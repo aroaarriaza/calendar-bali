@@ -32,6 +32,15 @@ type Timezone = 'Madrid' | 'Miami' | 'Bali'
 const TZ_OFFSETS: Record<Timezone, number> = { Madrid: 2, Miami: -4, Bali: 8 }
 const TZ_FLAGS:   Record<Timezone, string>  = { Madrid: '🇪🇸', Miami: '🇺🇸', Bali: '🌴' }
 
+function detectCategory(title: string): Category {
+  const t = title.toLowerCase()
+  if (/fútbol|futbol|⚽|mundial|liga|gol|partido|champions/.test(t)) return 'football'
+  if (/spa|yoga|meditación|meditacion|bienestar|wellness|masaje|retiro/.test(t)) return 'wellness'
+  if (/vuelo|aeropuerto|ferry|barco|bus|transfer|hotel|villa|reserva|check/.test(t)) return 'travel'
+  if (/fiesta|party|🎉|bar|club|cena|dinner|lunch|brunch|drinks|social|amigos|friends/.test(t)) return 'social'
+  return 'activity'
+}
+
 function convertTime(time: string, toTz: Timezone): string {
   if (!time) return ''
   const [h, m] = time.split(':').map(Number)
@@ -196,7 +205,8 @@ export default function CalendarClient() {
   }
   const handleSave = () => {
     if (!form.title.trim() || !modal) return
-    const updated = { ...form, attachments }
+    const category = modal.event ? form.category : detectCategory(form.title)
+    const updated = { ...form, category, attachments }
     if (modal.event) persist(events.map(e => e.id === modal.event!.id ? { ...e, ...updated } : e))
     else persist([...events, { id: Date.now().toString(), date: modal.date, ...updated }])
     setModal(null)
@@ -428,22 +438,6 @@ export default function CalendarClient() {
           })}
         </div>
 
-        {/* ── Leyenda ── */}
-        <div style={{
-          display: 'flex', gap: 22, justifyContent: 'center',
-          flexWrap: 'wrap', marginTop: 40,
-        }}>
-          {Object.entries(CATEGORIES).map(([key, cat]) => (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.68rem', color: 'rgba(200,150,80,0.45)' }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: 3,
-                background: cat.border,
-                boxShadow: `0 0 10px ${cat.glow}`,
-              }} />
-              {cat.label}
-            </div>
-          ))}
-        </div>
 
       </div>
 
@@ -545,23 +539,32 @@ export default function CalendarClient() {
               />
             ))}
 
-            {/* Select */}
-            <select
-              value={form.category}
-              onChange={e => setForm(f => ({ ...f, category: e.target.value as Category }))}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 12, padding: '12px 15px',
-                color: '#C8A878', fontSize: '0.9rem', marginBottom: 26,
-                outline: 'none',
-              }}
-            >
-              {Object.entries(CATEGORIES).map(([key, cat]) => (
-                <option key={key} value={key}>{cat.label}</option>
-              ))}
-            </select>
+            {/* Categoría: auto-detectada al crear, editable al modificar */}
+            {modal?.event ? (
+              <select
+                value={form.category}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value as Category }))}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12, padding: '12px 15px',
+                  color: '#C8A878', fontSize: '0.9rem', marginBottom: 26,
+                  outline: 'none',
+                }}
+              >
+                {Object.entries(CATEGORIES).map(([key, cat]) => (
+                  <option key={key} value={key}>{cat.label}</option>
+                ))}
+              </select>
+            ) : (
+              <div style={{
+                fontSize: '0.72rem', color: 'rgba(200,150,80,0.4)',
+                marginBottom: 26, paddingLeft: 4,
+              }}>
+                Categoría detectada automáticamente al guardar
+              </div>
+            )}
 
             {/* Adjuntos */}
             <div style={{ marginBottom: 22 }}>
