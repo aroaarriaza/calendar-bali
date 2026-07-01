@@ -22,6 +22,7 @@ const CATEGORIES: Record<Category, { label: string; color: string; bg: string; b
 
 const SEED_EVENTS: Event[] = [
   { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot', category: 'activity' },
+  { id: 'seed-7', date: '2026-07-02', title: '⚽ Mundial España', category: 'social' },
   { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar', category: 'social' },
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns', category: 'social' },
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
