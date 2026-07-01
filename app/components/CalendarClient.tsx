@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-type Category = 'activity' | 'travel' | 'social' | 'wellness'
+type Category = 'activity' | 'travel' | 'social' | 'wellness' | 'football'
 
 interface Event {
   id: string
@@ -16,17 +16,18 @@ const CATEGORIES: Record<Category, { label: string; color: string; bg: string; b
   activity: { label: 'Actividad', color: '#e8b870', bg: 'rgba(180,100,30,0.25)', border: '#c07830' },
   travel:   { label: 'Viaje',     color: '#90c0e8', bg: 'rgba(60,120,180,0.2)',   border: '#5090c0' },
   social:   { label: 'Social',    color: '#c090e8', bg: 'rgba(120,60,160,0.25)',  border: '#9060c0' },
-  wellness: { label: 'Bienestar', color: '#80d0a0', bg: 'rgba(40,140,80,0.2)',    border: '#50a870' },
+  wellness:  { label: 'Bienestar', color: '#80d0a0', bg: 'rgba(40,140,80,0.2)',   border: '#50a870' },
+  football:  { label: 'Fútbol',    color: '#ff9a9a', bg: 'rgba(200,40,40,0.2)',  border: '#cc3030' },
 }
 
 const SEED_EVENTS: Event[] = [
   { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot', category: 'activity' },
-  { id: 'seed-7', date: '2026-07-02', title: '⚽ Mundial España', category: 'social' },
+  { id: 'seed-7', date: '2026-07-02', title: '⚽ Mundial España', category: 'football' },
   { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar', category: 'social' },
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns', category: 'social' },
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas', category: 'social' },
   { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour', category: 'activity' },
-  { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial', category: 'social' },
+  { id: 'seed-8', date: '2026-07-19', title: '🏆 Final Mundial', category: 'football' },
   { id: 'seed-6', date: '2026-07-22', title: 'Fin reserva villa', category: 'travel' },
 ]
 
