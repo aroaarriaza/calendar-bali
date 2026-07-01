@@ -40,7 +40,7 @@ export default function BaliMap({ events, onEventClick }: Props) {
         zoomControl: true,
       })
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
         maxZoom: 19,
       }).addTo(map)
@@ -130,7 +130,7 @@ export default function BaliMap({ events, onEventClick }: Props) {
   return (
     <>
       <style>{`
-        .leaflet-container { background: #0a1520; }
+        .leaflet-container { background: #a8d5e8; }
         .bali-popup .leaflet-popup-content-wrapper {
           background: rgba(255,248,235,0.97);
           border-radius: 12px;

@@ -41,7 +41,7 @@ function convertTime(time: string, toTz: Timezone): string {
 const SEED_EVENTS: Event[] = [
   { id: 'seed-1', date: '2026-07-02', title: 'Templo Tanah Lot',  category: 'activity', photoQuery: 'Tanah Lot temple sunset Bali',                coords: [-8.6210, 115.0868] },
   { id: 'seed-7', date: '2026-07-02', title: '⚽ España-Austria', category: 'football', time: '21:00', photoQuery: 'Spain football team World Cup' },
-  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Seminyak Bali beach sunset cocktail bar',       coords: [-8.6897, 115.1580] },
+  { id: 'seed-2', date: '2026-07-03', title: '🎉 Sandbar',        category: 'social',   photoQuery: 'Canggu Bali beach bar sunset cocktail',         coords: [-8.636, 115.127] },
   { id: 'seed-3', date: '2026-07-04', title: '🎉 Finns',          category: 'social',   photoQuery: 'Canggu Bali surf beach club pool party',        coords: [-8.6551, 115.1270] },
   { id: 'seed-4', date: '2026-07-11', title: '🎉 Atlas',          category: 'social',   photoQuery: 'Bali beach club sunset pool canggu',           coords: [-8.6520, 115.1242] },
   { id: 'seed-5', date: '2026-07-13', title: '🌋 Monte Batour',   category: 'activity', photoQuery: 'Mount Batur volcano sunrise Bali trekking',     coords: [-8.2416, 115.3757] },
